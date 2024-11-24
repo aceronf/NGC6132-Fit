@@ -1,0 +1,25 @@
+# Best-fit model results for imfit 1.9.0 (OpenMP-enabled)
+# Generated on Sun Nov 24 22:50:51 2024 by the following command:
+#    imfit NGC6132_i.fits -c config_model.dat --sky=177.18507 --gain=4.885 --readnoise=6.25 --save-model=exponencial+sersic/expser_modelo.fits --psf=mofeta.fits --mask=NGC6132_mask2D_new.fits --save-residual=exponencial+sersic/expser_residuo.fits --save-params=exponencial+sersic/expser_params.dat
+
+# Results of fit:
+#   Algorithm: Levenberg-Marquardt: status = 1 -- SUCCESS: Convergence in fit-statistic value.
+#   Fit statistic: chi-squared (data-based errors)
+#   Best-fit value: 31869.088979
+#   Reduced value: 2.139152
+#   AIC: 31891.106700
+#   BIC: 31974.795902
+
+X0		185.5889 # +/- 0.0094
+Y0		267.0094 # +/- 0.0163
+FUNCTION Exponential
+PA		16.2705 # +/- 0.053952	deg (CCW from +y axis)
+ell		0.668786 # +/- 0.0016198
+I_0		478.809 # +/- 2.7953	counts/pixel
+h		24.5147 # +/- 0.069846	pixels
+FUNCTION Sersic
+PA		21.6014 # +/- 1.546	deg (CCW from +y axis)
+ell		0.22817 # +/- 0.012151
+n		3.52288 # +/- 0.16143
+I_e		18.4988 # +/- 2.8402	counts/pixel
+r_e		16.7527 # +/- 1.786	pixels

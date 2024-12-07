@@ -131,24 +131,49 @@ if __name__ == "__main__":
     ######################################################################
     x_extent = np.arange(0, calibrada_abs.shape[1]) * pixel_size
     y_extent = np.arange(0, calibrada_abs.shape[0]) * pixel_size
-    fig1, ax1 = plt.subplots(figsize=(14, 12))
-    cax = ax1.imshow(calibrada_abs, cmap='inferno', origin='lower', aspect="equal", extent=[x_extent.min(), x_extent.max(), y_extent.min(), y_extent.max()], vmax=23)
+
+    fig1, ax1 = plt.subplots(figsize=(15, 12))
+
+    # Plot the data
+    cax = ax1.imshow(calibrada_abs, cmap='inferno', origin='lower', aspect="equal",
+                    extent=[x_extent.min(), x_extent.max(), y_extent.min(), y_extent.max()],
+                    vmax=23)
+
+    # Colorbar setup
     cbar = plt.colorbar(cax, ax=ax1, pad=0.13)
-    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30)
-    cbar.ax.tick_params(labelsize=24)
-    ax1.set_xlabel(r"$X$ [$\unit{\arcsec}$] ", fontsize=30)
-    ax1.set_ylabel(r"$Y$ [$\unit{\arcsec}$]", fontsize=30)
-    ax1.tick_params(axis='both', which='major', labelsize=24)
-    
+    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30, color='white')
+    cbar.ax.tick_params(labelsize=24, colors='white')
+
+    # Axis labels
+    ax1.set_xlabel(r"$X$ [$\unit{\arcsec}$] ", fontsize=30, color='white')
+    ax1.set_ylabel(r"$Y$ [$\unit{\arcsec}$]", fontsize=30, color='white')
+    ax1.tick_params(axis='both', which='major', labelsize=24, colors='white')
+
+    # Set the axes borders (spines) to white
+    for spine in ax1.spines.values():
+        spine.set_edgecolor('white')
+    for spine in cbar.ax.spines.values():
+        spine.set_edgecolor('white')
+
+    # Secondary axes
     kpcax = ax1.secondary_xaxis('top', functions=(arcsec_kpc, kpc_arcsec))
-    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14)
-    kpcax.tick_params(axis='both', which='major', labelsize=24)
-    
+    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14, color='white')
+    kpcax.tick_params(axis='both', which='major', labelsize=24, colors='white')
+
     kpcay = ax1.secondary_yaxis('right', functions=(arcsec_kpc, kpc_arcsec))
-    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14)
-    kpcay.tick_params(axis='both', which='major', labelsize=24)
-    fig1.savefig(os.path.join("plots_generales","imagen_calibrada.pdf"), format='pdf', bbox_inches='tight')
+    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14, color='white')
+    kpcay.tick_params(axis='both', which='major', labelsize=24, colors='white')
+
+    # Set transparent background
+    fig1.patch.set_facecolor('none')  # Transparent figure background
+    ax1.set_facecolor('none')         # Transparent axes background
+
+    # Save the figure with a transparent background
+    fig1.savefig(os.path.join("plots_generales", "imagen_calibrada.png"),
+                format='png', bbox_inches='tight', transparent=True, dpi=300)
+
     plt.close(fig1)
+
     
     # fig2, ax2 = plt.subplots(figsize=(10, 10))
     # cax = ax2.imshow(calibrada_abs, cmap='inferno', origin='lower', aspect="equal")
@@ -174,16 +199,33 @@ if __name__ == "__main__":
     ######################################################################
     hdu_list_PSF = fits.open(psf)
     psf_image = hdu_list_PSF[0].data
+
     fig3, ax3 = plt.subplots(figsize=(16, 12))
+
+    # Imagen con colormap y PowerNorm
     cax = ax3.imshow(psf_image, cmap='inferno', origin='lower', aspect="equal", norm=PowerNorm(gamma=0.3))
-    cbar = plt.colorbar(cax, ax=ax3)
-    cbar.set_label(r"Intensidad Normalizada", fontsize=30)
-    cbar.ax.tick_params(labelsize=24)
-    ax3.set_xlabel(r"$X$ [px]", fontsize=30)
-    ax3.set_ylabel(r"$Y$ [pc]", fontsize=30)
-    ax3.tick_params(axis='both', which='major', labelsize=24)
-    fig3.savefig(os.path.join("plots_generales","psf_mofeta.pdf"), format='pdf', bbox_inches='tight')
+
+    # Configurar ejes (sin etiquetas ni ticks)
+    ax3.set_xlabel("")
+    ax3.set_ylabel("")
+    ax3.tick_params(axis='both', which='both', length=0)  # Quitar ticks completamente
+    ax3.set_xticks([])  # Eliminar números del eje X
+    ax3.set_yticks([])  # Eliminar números del eje Y
+
+    # Quitar la barra de color
+    # plt.colorbar(cax, ax=ax3)  # Comentado porque no queremos la barra de color
+
+    # Fondo transparente y sin etiquetas en los ejes
+    fig3.patch.set_facecolor('none')  # Fondo de la figura transparente
+    ax3.set_facecolor('none')         # Fondo del eje transparente
+
+    for spine in ax3.spines.values():
+        spine.set_edgecolor('white')
+
+    # Guardar la figura
+    fig3.savefig(os.path.join("plots_generales", "psf_mofeta.png"), format='png', bbox_inches='tight', transparent=True, dpi=300)
     plt.close(fig3)
+
     
     ######################################################################
     # Perfil de brillo
@@ -207,31 +249,50 @@ if __name__ == "__main__":
     
     # Plot de las isofotas sobre la imagen calibrada (sobre la original queda más feo)
     fig4, ax4 = plt.subplots(figsize=(10, 10))
-    cax = ax4.imshow(masked_calibrada , cmap='inferno', origin='lower', aspect="equal",
-                     vmax=23, vmin=11)
+
+    # Mostrar la imagen con límites y configuración de color
+    cax = ax4.imshow(masked_calibrada, cmap='inferno', origin='lower', aspect="equal", vmax=23, vmin=11)
+
+    # Configuración de la barra de color
     cbar = plt.colorbar(cax, ax=ax4, pad=0.16)
-    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30)
-    cbar.ax.tick_params(labelsize=24)
-    ax4.set_xlabel(r"$X$ [px] ", fontsize=30)
-    ax4.set_ylabel(r"$Y$ [px]", fontsize=30)
-    ax4.set_xlim(120,250)
-    ax4.set_ylim(135,395)
-    ax4.tick_params(axis='both', which='major', labelsize=24)
-    
+    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30, color="white")  # Etiqueta de la barra de color
+    cbar.ax.tick_params(labelsize=24, colors="white")  # Ticks en blanco
+    cbar.outline.set_edgecolor("white")  # Bordes de la barra de color en blanco
+
+    # Etiquetas y límites de los ejes
+    ax4.set_xlabel(r"$X$ [px] ", fontsize=30, color="white")
+    ax4.set_ylabel(r"$Y$ [px]", fontsize=30, color="white")
+    ax4.set_xlim(120, 250)
+    ax4.set_ylim(135, 395)
+    ax4.tick_params(axis='both', which='major', labelsize=24, colors="white")  # Números y ticks en blanco
+
+    # Ejes secundarios (kpc)
     kpcax = ax4.secondary_xaxis('top', functions=(pix_kpc, kpc_pix))
-    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14)
-    kpcax.tick_params(axis='both', which='major', labelsize=24)
-    
+    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14, color="white")
+    kpcax.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
     kpcay = ax4.secondary_yaxis('right', functions=(pix_kpc, kpc_pix))
-    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14)
-    kpcay.tick_params(axis='both', which='major', labelsize=24)
+    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14, color="white")
+    kpcay.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Cambiar colores de los bordes de los ejes y fondo transparente
+    fig4.patch.set_facecolor('none')  # Fondo transparente de la figura
+    ax4.set_facecolor('none')  # Fondo transparente de los ejes
+    ax4.spines['top'].set_color('white')
+    ax4.spines['bottom'].set_color('white')
+    ax4.spines['left'].set_color('white')
+    ax4.spines['right'].set_color('white')
+
+
+
     
     for iso in isolist:
         if iso.sma > 0:
             aper = EllipticalAperture((iso.x0, iso.y0), iso.sma,
                               iso.sma * (1 - iso.eps),iso.pa)
             aper.plot(color='white')
-    fig4.savefig(os.path.join("plots_generales","isofotas.pdf"), format='pdf', bbox_inches='tight')
+    # Guardar la figura
+    fig4.savefig(os.path.join("plots_generales", "isofotas_calibrada.png"), format='png', bbox_inches='tight', transparent=True, dpi=300)
     plt.close(fig4)
     
     # Creamos la curva de brillo superficial (pixeles, cuentas):
@@ -257,24 +318,48 @@ if __name__ == "__main__":
     mu_fit = np.polyval([slope, intercept], smas_cal)
     h=(2.5)/(np.log(10)*slope*pixel_size)
     I_0=10**((2.5*np.log10(pixel_size**2)-intercept-zcal)/(2.5))
+    print("#################################")
     print("Ajuste en la región exponencial:")
-    print(f"I_0 = {I_0}")
-    print(f"h = {h}")
-    fig6, ax6 = plt.subplots(figsize=(10, 10))
-    ax6.plot(smas_cal, mu, "o", color="purple", markersize=9, alpha=0.7)
-    ax6.plot(smas_cal, mu_fit, "--", color="darkgreen", linewidth=3, alpha=0.7)
-    ax6.set_xlabel(r"semieje mayor [$\unit{\arcsec}$] ", fontsize=30)
-    ax6.set_ylabel(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30)
-    ax6.tick_params(axis='both', which='major', labelsize=24)
-    ax6.invert_yaxis()
-    
-    kpcax = ax6.secondary_xaxis('top', functions=(arcsec_kpc, kpc_arcsec))
-    kpcax.set_xlabel(r"semieje mayor [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14)
-    kpcax.tick_params(axis='both', which='major', labelsize=24)
+    print(f"I_0 = {I_0} ADU/pixel")
+    print(f"h = {h} pixels")
+    print("#################################")
 
-    
-    fig6.savefig(os.path.join("plots_generales","brillo._calibrada.pdf"), format='pdf', bbox_inches='tight')
+    fig6, ax6 = plt.subplots(figsize=(10, 10))
+    # Plotting the data
+    ax6.plot(smas_cal, mu, "o", color="cyan", markersize=9, alpha=0.7, label=r"Medidas")
+    ax6.plot(smas_cal, mu_fit, "--", color="lime", linewidth=3, alpha=0.7, label=r"Ajuste lineal")
+
+    # Labels and ticks in white
+    ax6.set_xlabel(r"semieje mayor [$\unit{\arcsec}$] ", fontsize=30, color="white")
+    ax6.set_ylabel(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30, color="white")
+    ax6.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Invert y-axis
+    ax6.invert_yaxis()
+
+    # Add secondary x-axis
+    kpcax = ax6.secondary_xaxis('top', functions=(arcsec_kpc, kpc_arcsec))
+    kpcax.set_xlabel(r"semieje mayor [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14, color="white")
+    kpcax.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Legend in white
+    ax6.legend(fontsize=24, facecolor="none", edgecolor="white", labelcolor="white")
+
+    # Set axis spines and ticks to white
+    ax6.spines['top'].set_color('white')
+    ax6.spines['bottom'].set_color('white')
+    ax6.spines['left'].set_color('white')
+    ax6.spines['right'].set_color('white')
+
+    # Transparent background
+    fig6.patch.set_facecolor('none')  # Make the figure background transparent
+    ax6.set_facecolor('none')        # Make the axis background transparent
+
+    # Save the figure
+    fig6.savefig(os.path.join("plots_generales", "brillo_calibrada.png"), 
+                format='png', bbox_inches='tight', transparent=True, dpi=300)
     plt.close(fig6)
+
     
     ######################################################################
     # Ajustes con imfit (exponencial)
@@ -298,36 +383,73 @@ if __name__ == "__main__":
     # encima de la curva de brillo superficial:
     with open(params, 'r') as params:
         lines = params.readlines()
-        print(lines)
         I_0_exp = [float(l.split()[1].strip()) for l in lines if "I_0" in l][0]
+        I_0_exp_error = [float(l.split()[4].strip()) for l in lines if "I_0" in l][0]
         h_exp = [float(l.split()[1].strip()) for l in lines if l[0]=="h"][0]
+        h_exp_error = [float(l.split()[4].strip()) for l in lines if l[0]=="h"][0]
     
+    I_0_exp_cal = -2.5*np.log10(I_0_exp/pixel_size**2)-zcal
+    I_0_exp_cal_error = 2.5*(I_0_exp_error)/(I_0_exp*np.log(10))
+    h_exp_cal = h*pixel_size*scale
+    h_exp_cal_error = h_exp_error*pixel_size*scale
+
+    print("#################################")
+    print("Ajuste al perfil exponencial:")
+    print(f"I_0_exp = {I_0_exp} ADU/pixel")
+    print(f"h_exp = {h_exp} pixels")
+    print(f"I_0_exp_cal = {I_0_exp_cal} +/- {I_0_exp_cal_error} mag/arcsec^2")
+    print(f"h_exp_cal = {h_exp_cal} +/- {h_exp_cal_error} kpc")
+    print("#################################")
     # plot del modelo exponencial:
     hdu_list_model_exp = fits.open(modelo)
     model_exp = hdu_list_model_exp[0].data
     hdu_list_model_exp.close()
     model_exp_cal = -2.5*np.log10(model_exp/pixel_size**2)-zcal
 
-    fig7, ax7 = plt.subplots(figsize=(12, 10))
-    cax = ax7.imshow(model_exp_cal, cmap='inferno', origin='lower', aspect="equal", extent=[x_extent.min(), x_extent.max(), y_extent.min(), y_extent.max()], 
-                     vmin=np.min(calibrada_abs), vmax=23)
+    fig7, ax7 = plt.subplots(figsize=(15, 12))
+
+    # Main plot with image
+    cax = ax7.imshow(
+        model_exp_cal, cmap='inferno', origin='lower', aspect="equal",
+        extent=[x_extent.min(), x_extent.max(), y_extent.min(), y_extent.max()],
+        vmin=np.min(calibrada_abs), vmax=23
+    )
+
+    # Colorbar settings
     cbar = plt.colorbar(cax, ax=ax7, pad=0.13)
-    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30)
-    cbar.ax.tick_params(labelsize=24)
-    ax7.set_xlabel(r"$X$ [$\unit{\arcsec}$] ", fontsize=30)
-    ax7.set_ylabel(r"$Y$ [$\unit{\arcsec}$]", fontsize=30)
-    ax7.tick_params(axis='both', which='major', labelsize=24)
-    
+    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30, color="white")
+    cbar.ax.tick_params(labelsize=24, colors="white")
+    cbar.outline.set_edgecolor("white")  # Set colorbar border to white
+
+    # Axis labels and ticks
+    ax7.set_xlabel(r"$X$ [$\unit{\arcsec}$] ", fontsize=30, color="white")
+    ax7.set_ylabel(r"$Y$ [$\unit{\arcsec}$]", fontsize=30, color="white")
+    ax7.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Secondary axes
     kpcax = ax7.secondary_xaxis('top', functions=(arcsec_kpc, kpc_arcsec))
-    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14)
-    kpcax.tick_params(axis='both', which='major', labelsize=24)
-    
+    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14, color="white")
+    kpcax.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
     kpcay = ax7.secondary_yaxis('right', functions=(arcsec_kpc, kpc_arcsec))
-    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14)
-    kpcay.tick_params(axis='both', which='major', labelsize=24)
-    
-    fig7.savefig(os.path.join("exponencial","modelo_exp.pdf"), format='pdf', bbox_inches='tight')
+    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14, color="white")
+    kpcay.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Set axis spines and ticks to white
+    ax7.spines['top'].set_color('white')
+    ax7.spines['bottom'].set_color('white')
+    ax7.spines['left'].set_color('white')
+    ax7.spines['right'].set_color('white')
+
+    # Transparent background
+    fig7.patch.set_facecolor('none')  # Transparent figure background
+    ax7.set_facecolor('none')        # Transparent axis background
+
+    # Save figure with transparency
+    fig7.savefig(os.path.join("exponencial", "modelo_exp.png"), 
+                format='png', bbox_inches='tight', transparent=True, dpi=300)
     plt.close(fig7)
+
     
     #plot del residuo:
     #hdu_list_resid_exp = fits.open(residuo)
@@ -338,47 +460,92 @@ if __name__ == "__main__":
     #resid_exp_cal[resid_exp_cal<0] = +2.5*np.log10(-resid_exp_cal[resid_exp_cal<0]/pixel_size**2)+zcal
     resid_exp_cal  = calibrada_abs - model_exp_cal
 
-    fig8, ax8 = plt.subplots(figsize=(12, 10))
-    cax = ax8.imshow(resid_exp_cal, cmap='PRGn', origin='lower', aspect="equal", extent=[x_extent.min(), x_extent.max(), y_extent.min(), y_extent.max()],
-                     vmin=-0.5, vmax=0.5)
+    fig8, ax8 = plt.subplots(figsize=(15, 12))
 
-                     
+    # Main plot with image
+    cax = ax8.imshow(
+        resid_exp_cal, cmap='PRGn', origin='lower', aspect="equal",
+        extent=[x_extent.min(), x_extent.max(), y_extent.min(), y_extent.max()],
+        vmin=-0.5, vmax=0.5
+    )
+
+    # Colorbar settings
     cbar = plt.colorbar(cax, ax=ax8, pad=0.13)
-    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30)
-    cbar.ax.tick_params(labelsize=24)
-    ax8.set_xlabel(r"$X$ [$\unit{\arcsec}$] ", fontsize=30)
-    ax8.set_ylabel(r"$Y$ [$\unit{\arcsec}$]", fontsize=30)
-    ax8.tick_params(axis='both', which='major', labelsize=24)
-    
+    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30, color="white")
+    cbar.ax.tick_params(labelsize=24, colors="white")
+    cbar.outline.set_edgecolor("white")  # Set colorbar border to white
+
+    # Axis labels and ticks
+    ax8.set_xlabel(r"$X$ [$\unit{\arcsec}$] ", fontsize=30, color="white")
+    ax8.set_ylabel(r"$Y$ [$\unit{\arcsec}$]", fontsize=30, color="white")
+    ax8.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Secondary axes
     kpcax = ax8.secondary_xaxis('top', functions=(arcsec_kpc, kpc_arcsec))
-    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14)
-    kpcax.tick_params(axis='both', which='major', labelsize=24)
-    
+    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14, color="white")
+    kpcax.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
     kpcay = ax8.secondary_yaxis('right', functions=(arcsec_kpc, kpc_arcsec))
-    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14)
-    kpcay.tick_params(axis='both', which='major', labelsize=24)
-    
-    fig8.savefig(os.path.join("exponencial","residuo_exp.pdf"), format='pdf', bbox_inches='tight')
-    #plt.close(fig8)
+    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14, color="white")
+    kpcay.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Set axis spines and ticks to white
+    ax8.spines['top'].set_color('white')
+    ax8.spines['bottom'].set_color('white')
+    ax8.spines['left'].set_color('white')
+    ax8.spines['right'].set_color('white')
+
+    # Transparent background
+    fig8.patch.set_facecolor('none')  # Transparent figure background
+    ax8.set_facecolor('none')        # Transparent axis background
+
+    # Save figure with transparency
+    fig8.savefig(os.path.join("exponencial", "residuo_exp.png"), 
+                format='png', bbox_inches='tight', transparent=True, dpi=300)
+    plt.close(fig8)
+
     
     #plot del modelo exponencial con la curva de brillo superficial:
     rr = np.linspace(0,50,200)
     mu_exp = -2.5*np.log10(I_0_exp*np.exp(-rr/(h_exp*pixel_size)) /pixel_size**2)-zcal
-    fig9, ax9 = plt.subplots(figsize=(14, 10))
-    ax9.plot(smas_cal, mu, "o", color="purple", markersize=9, alpha=0.7, label=r"Medidas")
-    ax9.plot(rr, mu_exp, "--", color="darkgreen", linewidth=3, alpha=0.7,label=r"Modelo exponencial")
-    ax9.set_xlabel(r"semieje mayor [$\unit{\arcsec}$] ", fontsize=30)
-    ax9.set_ylabel(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30)
-    ax9.tick_params(axis='both', which='major', labelsize=24)
+    fig9, ax9 = plt.subplots(figsize=(12, 14))
+
+    # Plot the data points and exponential fit
+    ax9.plot(smas_cal, mu, "o", color="cyan", markersize=9, alpha=0.7, label=r"Medidas")
+    ax9.plot(rr, mu_exp, "--", color="lime", linewidth=3, alpha=0.7, label=r"Perfil exponencial")
+
+    # Set labels and font size
+    ax9.set_xlabel(r"semieje mayor [$\unit{\arcsec}$] ", fontsize=30, color="white")
+    ax9.set_ylabel(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30, color="white")
+
+    # Set ticks and tick label size, and color them white
+    ax9.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Invert y-axis
     ax9.invert_yaxis()
-    ax9.legend(fontsize=24)
-    
+
+    # Set legend
+    ax9.legend(fontsize=24, frameon=True, loc='best', labels=[r"Medidas", r"Perfil exponencial"], facecolor='none', edgecolor='white', labelcolor="white")
+
+    # Secondary x-axis for kpc units
     kpcax = ax9.secondary_xaxis('top', functions=(arcsec_kpc, kpc_arcsec))
-    kpcax.set_xlabel(r"semieje mayor [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14)
-    kpcax.tick_params(axis='both', which='major', labelsize=24)
-    
-    fig9.savefig(os.path.join("exponencial","curva_brillo.pdf"), format='pdf', bbox_inches='tight')
+    kpcax.set_xlabel(r"semieje mayor [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14, color="white")
+    kpcax.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Set the figure and axis background to transparent
+    fig9.patch.set_facecolor('none')  # Transparent figure background
+    ax9.set_facecolor('none')        # Transparent axis background
+
+    # Set the spines to white
+    ax9.spines['top'].set_color('white')
+    ax9.spines['bottom'].set_color('white')
+    ax9.spines['left'].set_color('white')
+    ax9.spines['right'].set_color('white')
+
+    # Save the figure
+    fig9.savefig(os.path.join("exponencial", "curva_brillo.png"), format='png', bbox_inches='tight', transparent=True, dpi=300)
     plt.close(fig9)
+
     ######################################################################
     # Ajustes con imfit (exponencial+sersic)
     ######################################################################
@@ -400,7 +567,6 @@ if __name__ == "__main__":
     # encima de la curva de brillo superficial:
     with open(params, 'r') as params:
         lines = params.readlines()
-        print(lines)
         I_0_exp = [float(l.split()[1].strip()) for l in lines if "I_0" in l][0]
         I_0_exp_err = [float(l.split()[4].strip()) for l in lines if "I_0" in l][0]
         
@@ -416,32 +582,74 @@ if __name__ == "__main__":
         r_e_ser = [float(l.split()[1].strip()) for l in lines if "r_e" in l][0]
         r_e_ser_err = [float(l.split()[4].strip()) for l in lines if "r_e" in l][0]
         
+    I_0_exp_cal = -2.5*np.log10(I_0_exp/pixel_size**2)-zcal
+    I_0_exp_cal_error = 2.5*(I_0_exp_error)/(I_0_exp*np.log(10))
+    h_exp_cal = h_exp*pixel_size*scale
+    h_exp_cal_error = h_exp_err*pixel_size*scale
+
+    I_e_ser_cal = -2.5*np.log10(I_e_ser/pixel_size**2)-zcal
+    I_e_ser_cal_error = 2.5*(I_e_ser_err)/(I_e_ser*np.log(10))
+    r_e_ser_cal = r_e_ser*pixel_size*scale
+    r_e_ser_cal_error = r_e_ser_err*pixel_size*scale
+
+    print("#################################")
+    print("Ajuste al perfil exponencial + Sérsic:")
+    print(f"I_0_exp = {I_0_exp} ADU/pixel")
+    print(f"h_exp = {h_exp} pixels")
+    print(f"I_0_exp_cal = {I_0_exp_cal} +/- {I_0_exp_cal_error} mag/arcsec^2")
+    print(f"h_exp_cal = {h_exp_cal} +/- {h_exp_cal_error} kpc \n")
+
+    print(f"I_e_ser_cal = {I_e_ser_cal} +/- {I_e_ser_cal_error} mag/arcsec^2")
+    print(f"r_e_ser_cal = {r_e_ser_cal} +/- {r_e_ser_cal_error} kpc \n")
+    print("#################################")
     # plot del modelo exponencial + sersic:
     hdu_list_model = fits.open(modelo)
     model_expser = hdu_list_model[0].data
     hdu_list_model.close()
     model_expser_cal = -2.5*np.log10(model_expser/pixel_size**2)-zcal
 
-    fig10, ax10 = plt.subplots(figsize=(12, 10))
-    cax = ax10.imshow(model_expser_cal, cmap='inferno', origin='lower', aspect="equal", extent=[x_extent.min(), x_extent.max(), y_extent.min(), y_extent.max()], 
-                     vmin=np.min(calibrada_abs), vmax=23)
+    fig10, ax10 = plt.subplots(figsize=(15, 12))
+
+    # Plot the image
+    cax = ax10.imshow(model_expser_cal, cmap='inferno', origin='lower', aspect="equal", extent=[x_extent.min(), x_extent.max(), y_extent.min(), y_extent.max()],
+                    vmin=np.min(calibrada_abs), vmax=23)
+
+    # Colorbar settings
     cbar = plt.colorbar(cax, ax=ax10, pad=0.13)
-    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30)
-    cbar.ax.tick_params(labelsize=24)
-    ax10.set_xlabel(r"$X$ [$\unit{\arcsec}$] ", fontsize=30)
-    ax10.set_ylabel(r"$Y$ [$\unit{\arcsec}$]", fontsize=30)
-    ax10.tick_params(axis='both', which='major', labelsize=24)
-    
+    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30, color="white")
+    cbar.ax.tick_params(labelsize=24, colors="white")  # Color the ticks white
+    cbar.outline.set_edgecolor('white')  # Color the colorbar border white
+
+    # Axis labels
+    ax10.set_xlabel(r"$X$ [$\unit{\arcsec}$] ", fontsize=30, color="white")
+    ax10.set_ylabel(r"$Y$ [$\unit{\arcsec}$]", fontsize=30, color="white")
+
+    # Axis ticks
+    ax10.tick_params(axis='both', which='major', labelsize=24, colors="white")  # Color ticks white
+
+    # Secondary x and y axes for kpc units
     kpcax = ax10.secondary_xaxis('top', functions=(arcsec_kpc, kpc_arcsec))
-    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14)
-    kpcax.tick_params(axis='both', which='major', labelsize=24)
-    
+    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14, color="white")
+    kpcax.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
     kpcay = ax10.secondary_yaxis('right', functions=(arcsec_kpc, kpc_arcsec))
-    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14)
-    kpcay.tick_params(axis='both', which='major', labelsize=24)
-    
-    fig10.savefig(os.path.join("exponencial+sersic","modelo_expser.pdf"), format='pdf', bbox_inches='tight')
+    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14, color="white")
+    kpcay.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Set the figure and axis background to transparent
+    fig10.patch.set_facecolor('none')  # Transparent figure background
+    ax10.set_facecolor('none')         # Transparent axis background
+
+    # Set the spines (axis borders) to white
+    ax10.spines['top'].set_color('white')
+    ax10.spines['bottom'].set_color('white')
+    ax10.spines['left'].set_color('white')
+    ax10.spines['right'].set_color('white')
+
+    # Save the figure with a transparent background
+    fig10.savefig(os.path.join("exponencial+sersic", "modelo_expser.png"), format='png', bbox_inches='tight', transparent=True, dpi=300)
     plt.close(fig10)
+
     
     #plot del residuo:
     # hdu_list_resid_expser = fits.open(residuo)
@@ -452,28 +660,48 @@ if __name__ == "__main__":
     # resid_expser_cal[resid_expser_cal<0] = +2.5*np.log10(-resid_expser_cal[resid_expser_cal<0]/pixel_size**2)+zcal
     
     resid_expser_cal  = calibrada_abs - model_expser_cal
-    fig11, ax11 = plt.subplots(figsize=(12, 10))
-    cax = ax11.imshow(resid_expser_cal, cmap='PRGn', origin='lower', aspect="equal", extent=[x_extent.min(), x_extent.max(), y_extent.min(), y_extent.max()],
-                      vmin=-0.5, vmax=0.5)
+    fig11, ax11 = plt.subplots(figsize=(15, 12))
 
-                     
+    # Plot the image
+    cax = ax11.imshow(resid_expser_cal, cmap='PRGn', origin='lower', aspect="equal", extent=[x_extent.min(), x_extent.max(), y_extent.min(), y_extent.max()],
+                    vmin=-0.5, vmax=0.5)
+
+    # Colorbar settings
     cbar = plt.colorbar(cax, ax=ax11, pad=0.13)
-    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30)
-    cbar.ax.tick_params(labelsize=24)
-    ax11.set_xlabel(r"$X$ [$\unit{\arcsec}$] ", fontsize=30)
-    ax11.set_ylabel(r"$Y$ [$\unit{\arcsec}$]", fontsize=30)
-    ax11.tick_params(axis='both', which='major', labelsize=24)
-    
+    cbar.set_label(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30, color="white")
+    cbar.ax.tick_params(labelsize=24, colors="white")  # Color the ticks white
+    cbar.outline.set_edgecolor('white')  # Color the colorbar border white
+
+    # Axis labels
+    ax11.set_xlabel(r"$X$ [$\unit{\arcsec}$] ", fontsize=30, color="white")
+    ax11.set_ylabel(r"$Y$ [$\unit{\arcsec}$]", fontsize=30, color="white")
+
+    # Axis ticks
+    ax11.tick_params(axis='both', which='major', labelsize=24, colors="white")  # Color ticks white
+
+    # Secondary x and y axes for kpc units
     kpcax = ax11.secondary_xaxis('top', functions=(arcsec_kpc, kpc_arcsec))
-    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14)
-    kpcax.tick_params(axis='both', which='major', labelsize=24)
-    
+    kpcax.set_xlabel(r"$X$ [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14, color="white")
+    kpcax.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
     kpcay = ax11.secondary_yaxis('right', functions=(arcsec_kpc, kpc_arcsec))
-    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14)
-    kpcay.tick_params(axis='both', which='major', labelsize=24)
-    
-    fig11.savefig(os.path.join("exponencial+sersic","residuo_expser.pdf"), format='pdf', bbox_inches='tight')
-    #plt.close(fig11)
+    kpcay.set_ylabel(r"$Y$ [$\unit{\kilo\parsec}$]", fontsize=30, labelpad=14, color="white")
+    kpcay.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Set the figure and axis background to transparent
+    fig11.patch.set_facecolor('none')  # Transparent figure background
+    ax11.set_facecolor('none')         # Transparent axis background
+
+    # Set the spines (axis borders) to white
+    ax11.spines['top'].set_color('white')
+    ax11.spines['bottom'].set_color('white')
+    ax11.spines['left'].set_color('white')
+    ax11.spines['right'].set_color('white')
+
+    # Save the figure with a transparent background
+    fig11.savefig(os.path.join("exponencial+sersic", "residuo_expser.png"), format='png', bbox_inches='tight', transparent=True, dpi=300)
+    plt.close(fig11)
+
     
     #plot del modelo exponencial + sersic con la curva de brillo superficial:
     rr = np.linspace(0,50,200)
@@ -485,35 +713,59 @@ if __name__ == "__main__":
     
     mu_total = -2.5*np.log10(((I_e_ser*np.exp(-b_n*((rr/(r_e_ser*pixel_size))**(1/n_ser)-1))) + I_0_exp*np.exp(-rr/(h_exp*pixel_size))) /pixel_size**2)-zcal 
     
-    fig12, ax12 = plt.subplots(figsize=(15, 10))
-    ax12.plot(smas_cal, mu, "o", color="purple", markersize=9, alpha=0.7, label=r"Medidas")
-    ax12.plot(rr, mu_exp, linestyle="dashdot", color="darkgreen", linewidth=3, alpha=0.8,label=r"Perfil exponencial")
-    ax12.plot(rr, mu_sersic, linestyle="dotted", color="darkorange", linewidth=3, alpha=0.8,label=r"Perfil de Sérsic")
-    ax12.plot(rr, mu_total, "--", color="black", linewidth=3, alpha=0.9,label=r"Total")
-    ax12.set_xlabel(r"semieje mayor [$\unit{\arcsec}$] ", fontsize=30)
-    ax12.set_ylabel(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30)
-    ax12.tick_params(axis='both', which='major', labelsize=24)
+    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
+    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
+    fig12, ax12 = plt.subplots(figsize=(16, 14))
+
+    # Main plot
+    ax12.plot(smas_cal, mu, "o", color="cyan", markersize=9, alpha=0.7, label=r"Medidas")
+    ax12.plot(rr, mu_exp, linestyle="dashdot", color="lime", linewidth=3, alpha=0.8, label=r"Perfil exponencial")
+    ax12.plot(rr, mu_sersic, linestyle="dotted", color="orange", linewidth=3, alpha=0.8, label=r"Perfil de Sérsic")
+    ax12.plot(rr, mu_total, "--", color="white", linewidth=3, alpha=0.9, label=r"Total")
+
+    # Labels
+    ax12.set_xlabel(r"semieje mayor [$\unit{\arcsec}$] ", fontsize=30, color="white")
+    ax12.set_ylabel(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=30, color="white")
+    ax12.tick_params(axis='both', which='major', labelsize=24, colors="white")  # White ticks
     ax12.invert_yaxis()
-    ax12.legend(fontsize=24, loc=3)
+    ax12.legend(fontsize=24, loc=3, frameon=True, labelcolor="white", edgecolor="white", facecolor="none")  # White legend
 
     # Inset plot
     inset = inset_axes(ax12, width="50%", height="40%", loc="upper right")  # Adjust size and location
-    inset.plot(smas_cal, mu, "o", color="purple", markersize=9, alpha=0.7, label=r"Medidas")
-    inset.plot(rr, mu_exp, linestyle="dashdot", color="darkgreen", linewidth=3, alpha=0.8,label=r"Perfil exponencial")
-    inset.plot(rr, mu_sersic, linestyle="dotted", color="darkorange", linewidth=3, alpha=0.8,label=r"Perfil de Sérsic")
-    inset.plot(rr, mu_total, "--", color="black", linewidth=3, alpha=0.9,label=r"Total")
+    inset.plot(smas_cal, mu, "o", color="cyan", markersize=9, alpha=0.7, label=r"Medidas")
+    inset.plot(rr, mu_exp, linestyle="dashdot", color="lime", linewidth=3, alpha=0.8, label=r"Perfil exponencial")
+    inset.plot(rr, mu_sersic, linestyle="dotted", color="orange", linewidth=3, alpha=0.8, label=r"Perfil de Sérsic")
+    inset.plot(rr, mu_total, "--", color="white", linewidth=3, alpha=0.9, label=r"Total")
     inset.set_xlim(0, 10)  # Set the zoomed-in range
     inset.set_ylim(16, 13.5)
-    inset.set_xlabel(r"semieje mayor [$\unit{\arcsec}$] ", fontsize=20)
-    inset.set_ylabel(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=20)
-    inset.tick_params(axis='both', which='major', labelsize=18)
-    
+    inset.set_xlabel(r"semieje mayor [$\unit{\arcsec}$] ", fontsize=20, color="white")
+    inset.set_ylabel(r"$\mu$ [$\unit{\mag\per\arcsec\squared}$]", fontsize=20, color="white")
+    inset.tick_params(axis='both', which='major', labelsize=18, colors="white")  # White ticks
+    inset.spines['top'].set_color('white')
+    inset.spines['bottom'].set_color('white')
+    inset.spines['left'].set_color('white')
+    inset.spines['right'].set_color('white')
+
+    # Secondary x-axis for kpc units
     kpcax = ax12.secondary_xaxis('top', functions=(arcsec_kpc, kpc_arcsec))
-    kpcax.set_xlabel(r"semieje mayor [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14)
-    kpcax.tick_params(axis='both', which='major', labelsize=24)
-    
-    fig12.savefig(os.path.join("exponencial+sersic","curva_brillo.pdf"), format='pdf', bbox_inches='tight')
+    kpcax.set_xlabel(r"semieje mayor [$\unit{\kilo\parsec}$] ", fontsize=30, labelpad=14, color="white")
+    kpcax.tick_params(axis='both', which='major', labelsize=24, colors="white")
+
+    # Set background and spines to transparent and white respectively
+    fig12.patch.set_facecolor('none')  # Transparent figure background
+    ax12.set_facecolor('none')         # Transparent axis background
+    ax12.spines['top'].set_color('white')
+    ax12.spines['bottom'].set_color('white')
+    ax12.spines['left'].set_color('white')
+    ax12.spines['right'].set_color('white')
+
+    # Save figure with transparent background
+    fig12.savefig(os.path.join("exponencial+sersic", "curva_brillo.png"), format='png', bbox_inches='tight', transparent=True, dpi=300)
     plt.close(fig12)
+
+
     
     ######################################################################
     # Cocientes B/T, D/T
@@ -544,4 +796,3 @@ if __name__ == "__main__":
     print(f"D_T = {D_T} +- {D_T_err}")
     print(f"B_T = {B_T} +- {B_T_err}")
     print(f"B_D = {B_D} +- {B_D_err}")
-    
